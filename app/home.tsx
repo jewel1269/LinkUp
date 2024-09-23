@@ -5,6 +5,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { Ionicons, MaterialIcons, FontAwesome } from '@expo/vector-icons'; // Importing icons from Expo
 import { useRouter } from 'expo-router';
 import Avater from '@/components/Avater';
+import AllPost from '@/components/AllPost';
 
 // create a component
 const Home = () => {
@@ -22,7 +23,9 @@ const Home = () => {
 
     return (
         <ScreenWrapper style={styles.container}>
-            <View style={styles.headerContainer}>
+           <View>
+
+           <View style={styles.headerContainer}>
                 <Text style={styles.logoText}>LinkUp</Text>
                 <View style={styles.iconContainer}>
                     <TouchableOpacity onPress={()=>router.push("/notifications")} style={styles.icon}>
@@ -35,7 +38,15 @@ const Home = () => {
                         <Avater/>
                     </TouchableOpacity>
                 </View>
+
+
+               
             </View>
+
+                <View>
+                    <AllPost/>
+                </View>
+           </View>
         </ScreenWrapper>
     );
 };

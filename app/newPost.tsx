@@ -4,26 +4,16 @@ import { AntDesign } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useRef, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
-import Avater  from '@/components/Avater';
-
 import useAuth from '@/components/useAuth';
+import TextEditor from '@/components/TextEditor';
 
 // Create a component
 const NewPost = () => {
     const router = useRouter();
     const {user}= useAuth()
-    const bodyRef = useRef("")
-    const [Loading, setLoading] =useState(false)
-    const editorRef = useRef(null);
 
-    const handleEditorChange = (body:any) => {
-        console.log(body); 
-    };
-    
-
-  
     return (
-        <ScreenWrapper>
+        <ScreenWrapper >
             <View>
                 <View style={styles.header}>
                     <TouchableOpacity onPress={() => router.replace("/home")}>
@@ -43,7 +33,7 @@ const NewPost = () => {
                 </View>
 
                 <View style={styles.textEditor}>
-                <RichtextEditor editorRef={editorRef} onChange={handleEditorChange} />
+                <TextEditor/>
 
 
                 </View>
@@ -58,6 +48,7 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         alignItems: "center",
         padding: 10,
+        
     },
     headerText: {
         flex: 1,
