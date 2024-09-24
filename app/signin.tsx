@@ -16,6 +16,7 @@ import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth } from "@/components/Firebase/Firebase";
 import ScreenWrapper from "@/components/screenWrapper";
 import { AntDesign } from "@expo/vector-icons";
+import axios from "axios";
 
 // Create a component
 const SignUp = () => {
@@ -42,7 +43,7 @@ const SignUp = () => {
 
   const validateInputs = () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const phoneRegex = /^[0-9]{10}$/;
+    const phoneRegex = /^\d{10}$/; // Adjusted for a 10-digit phone number
 
     if (name.trim() === "") {
       ToastAndroid.show("Name is required", ToastAndroid.SHORT);
@@ -61,10 +62,7 @@ const SignUp = () => {
       return false;
     }
     if (!phoneRegex.test(phone)) {
-      ToastAndroid.show(
-        "Enter a valid 10-digit phone number",
-        ToastAndroid.SHORT
-      );
+      ToastAndroid.show("Enter a valid 10-digit phone number", ToastAndroid.SHORT);
       return false;
     }
     if (username.trim() === "") {
@@ -76,31 +74,39 @@ const SignUp = () => {
       return false;
     }
     if (password.length < 6) {
-      ToastAndroid.show(
-        "Password must be at least 6 characters long",
-        ToastAndroid.SHORT
-      );
+      ToastAndroid.show("Password must be at least 6 characters long", ToastAndroid.SHORT);
       return false;
     }
     return true;
   };
 
+  const userData = {
+    name, username, email, phone, password
+  }
+
+
   const doUserRegistration = async () => {
     if (!validateInputs()) return;
-
+  
     try {
-      await createUserWithEmailAndPassword(auth, email, password)
-      .then(res => {
-        ToastAndroid.show(
-          `User ${username} was successfully created!`,
-          ToastAndroid.SHORT
-        );
-        router.replace('/login');
-      });
+      const response = await axios.post("http://10.0.2.2:5000/user/create", userData); 
+      console.log(response.data); 
     } catch (error) {
-      ToastAndroid.show("Invalid User", ToastAndroid.SHORT);
+      console.error("Error creating user on server:", error);
+      ToastAndroid.show("Failed to create user on the server", ToastAndroid.SHORT);
+      return;
+    }
+  
+    try {
+      await createUserWithEmailAndPassword(auth, email, password);
+      ToastAndroid.show(`User ${username} was successfully created!`, ToastAndroid.SHORT);
+      router.replace('/login');
+    } catch (error) {
+      console.error(error);
+      ToastAndroid.show("Failed to create user: " ,ToastAndroid.SHORT);
     }
   };
+  
 
   return (
     <ScreenWrapper>
@@ -113,7 +119,7 @@ const SignUp = () => {
       <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
         <Text style={styles.introText}>Let's,</Text>
         <Text style={styles.subText}>Get Started</Text>
-        <Text style={styles.headerText}>Sign Up filup the from</Text>
+        <Text style={styles.headerText}>Sign Up fill up the form</Text>
 
         <View style={styles.inputRow}>
           <TextInput
@@ -143,7 +149,7 @@ const SignUp = () => {
           <TextInput
             style={[styles.input, styles.inputRight]}
             value={username}
-            placeholder="Username"
+            placeholder="address"
             onChangeText={setUsername}
             autoCapitalize="none"
           />
@@ -187,13 +193,10 @@ const styles = StyleSheet.create({
   backButton: {
     paddingTop: 50,
     paddingLeft: 20,
-    
-    
   },
   introText: {
     fontSize: 32,
     marginLeft: -260,
-   
   },
   subText: {
     fontSize: 22,

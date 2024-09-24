@@ -1,4 +1,3 @@
-//import libraries
 import { auth } from "@/components/Firebase/Firebase";
 import ScreenWrapper from "@/components/screenWrapper";
 import useAuth from "@/components/useAuth";
@@ -26,30 +25,45 @@ import {
   ScrollView,
 } from "react-native";
 
-// create a component
+// Create the Profile component
 const Profile = () => {
   const router = useRouter();
   const { user } = useAuth();
   const [posts, setPosts] = useState<any>([]);
+  const [userInfo, setUserInfo] = useState<any>({});
   const [loading, setLoading] = useState(true);
+  
+  useEffect(() => {
+    if (user?.email) {
+      fetchDataUser(user.email);
+    } else {
+      setLoading(false); // Stop loading if user email is not available
+    }
+  }, [user]);
 
-  const fetchData = () => {
-    fetch("https://jsonplaceholder.typicode.com/posts")
-      .then((response) => response.json())
-      .then((data) => {
-        console.log(data);
-        setPosts(data);
-        setLoading(false); // Set loading to false after data is fetched
-      })
-      .catch((error) => {
-        console.error("Error fetching data: ", error);
-        setLoading(false); // Also set loading to false on error
-      });
+  const fetchData = async () => {
+    try {
+      const response = await fetch("https://jsonplaceholder.typicode.com/posts");
+      const data = await response.json();
+      setPosts(data);
+    } catch (error) {
+      console.error("Error fetching posts: ", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  const fetchDataUser = async (email: string) => {
+    try {
+      const response = await fetch(`http://10.0.2.2:5000/user/create/${email}`);
+      const data = await response.json();
+      setUserInfo(data);
+    } catch (error) {
+      console.error("Error fetching user data: ", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleLogOut = () => {
     if (user) {
@@ -64,18 +78,14 @@ const Profile = () => {
           },
           {
             text: "OK",
-            onPress: () => {
-              signOut(auth)
-                .then(() => {
-                  ToastAndroid.show("Logout success", ToastAndroid.SHORT);
-                  router.replace("/login");
-                })
-                .catch((error) => {
-                  ToastAndroid.show(
-                    `Error: ${error.message}`,
-                    ToastAndroid.SHORT
-                  );
-                });
+            onPress: async () => {
+              try {
+                await signOut(auth);
+                ToastAndroid.show("Logout successful", ToastAndroid.SHORT);
+                router.replace("/login");
+              } catch (error) {
+                ToastAndroid.show(`invalid user`, ToastAndroid.SHORT);
+              }
             },
           },
         ],
@@ -84,33 +94,21 @@ const Profile = () => {
     }
   };
 
+  useEffect(() => {
+    fetchData(); // Fetch posts when the component mounts
+  }, []);
+
   return (
     <ScreenWrapper>
       <View>
         <View style={styles.container}>
-          <View>
-            <TouchableOpacity onPress={() => router.back()}>
-              <AntDesign
-                style={styles.back}
-                name="left"
-                size={26}
-                color="black"
-              />
-            </TouchableOpacity>
-          </View>
-          <View>
-            <Text style={styles.header}>Profile</Text>
-          </View>
-          <View>
-            <TouchableOpacity onPress={handleLogOut}>
-              <AntDesign
-                style={styles.logout}
-                name="logout"
-                size={24}
-                color="black"
-              />
-            </TouchableOpacity>
-          </View>
+          <TouchableOpacity onPress={() => router.back()}>
+            <AntDesign style={styles.back} name="left" size={26} color="black" />
+          </TouchableOpacity>
+          <Text style={styles.header}>Profile</Text>
+          <TouchableOpacity onPress={handleLogOut}>
+            <AntDesign style={styles.logout} name="logout" size={24} color="black" />
+          </TouchableOpacity>
         </View>
 
         {/* User Image and Edit Options */}
@@ -131,86 +129,56 @@ const Profile = () => {
 
         {/* User Information */}
         <View style={styles.userInfo}>
-          <Text style={styles.name}>Jewel Mia</Text>
+          <Text style={styles.name}>{userInfo?.name || 'User Name'}</Text>
         </View>
         <View style={styles.address}>
           <View style={styles.userRow}>
-            <MaterialCommunityIcons
-              name="email-search-outline"
-              size={24}
-              color="black"
-            />
-            <Text style={styles.userText}>{user?.email}</Text>
+            <MaterialCommunityIcons name="email-search-outline" size={24} color="black" />
+            <Text style={styles.userText}>{userInfo?.email || 'Email not available'}</Text>
           </View>
           <View style={styles.userRow}>
             <FontAwesome5 name="address-card" size={24} color="black" />
-            <Text style={styles.userText}>
-              Uttara Sector-10, Dhaka, Bangladesh
-            </Text>
+            <Text style={styles.userText}>Uttara Sector-10, Dhaka, Bangladesh</Text>
           </View>
           <View style={styles.userRow}>
             <Feather name="phone" size={24} color="black" />
-            <Text style={styles.userText}>+8801684321082</Text>
+            <Text style={styles.userText}>{userInfo?.phone ? `+88${userInfo.phone}` : 'Phone not available'}</Text>
           </View>
         </View>
 
-        {/* Your Post */}
-
+        {/* Your Posts */}
         <Text style={{ fontSize: 20, marginLeft: 10 }}>
-          Your Post <FontAwesome6 name="turn-down" size={18} color="red" />
+          Your Posts <FontAwesome6 name="turn-down" size={18} color="red" />
         </Text>
 
         <ScrollView style={{ paddingHorizontal: 10, gap: 10, marginTop: 20 }}>
-          {posts.slice(0, 10).map((post: any) => (
-            <View key={post.id}>
-              <View style={styles.containerOne}>
-                <View
-                  style={{
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                  }}
-                >
-                  <View style={styles.userDetails}>
-                    <Image
-                      source={require("../assets/images/4113045-removebg-preview.png")}
-                      style={styles.image}
-                    />
-                    <View>
-                      <Text>Jewel Mia</Text>
-                      <Text>10-11-24</Text>
-                    </View>
-                  </View>
-                  <View>
-                    <Entypo
-                      name="dots-three-horizontal"
-                      size={24}
-                      color="black"
-                    />
-                  </View>
+          {posts?.slice(0, 10).map((post: any) => (
+            <View key={post.id} style={styles.containerOne}>
+              <View style={styles.userDetails}>
+                <Image
+                  source={require("../assets/images/4113045-removebg-preview.png")}
+                  style={styles.image}
+                />
+                <View>
+                  <Text>Jewel Mia</Text>
+                  <Text>10-11-24</Text>
                 </View>
-                {/* This is Image section */}
-                <View style={styles.imageBorder}>
-                  <Text style={{ marginLeft: 8, padding: 3 }}>
-                    {post.title}
-                  </Text>
-                  <Image
-                    source={require("../assets/images/images (1).jpeg")}
-                    style={styles.postImage}
-                  />
-                </View>
-                {/* Comment Section */}
-                <View style={{ marginLeft: 7 }}>
-                  <View
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                      gap: 45,
-                    }}
-                  >
-                    <Feather name="heart" size={24} color="green" />
-                    <FontAwesome name="comment-o" size={24} color="black" />
-                    <AntDesign name="upload" size={24} color="red" />
-                  </View>
+                <TouchableOpacity>
+                  <Entypo name="dots-three-horizontal" size={24} color="black" />
+                </TouchableOpacity>
+              </View>
+              <View style={styles.imageBorder}>
+                <Text style={{ marginLeft: 8, padding: 3 }}>{post.title}</Text>
+                <Image
+                  source={require("../assets/images/images (1).jpeg")}
+                  style={styles.postImage}
+                />
+              </View>
+              <View style={{ marginLeft: 7 }}>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 45 }}>
+                  <Feather name="heart" size={24} color="green" />
+                  <FontAwesome name="comment-o" size={24} color="black" />
+                  <AntDesign name="upload" size={24} color="red" />
                 </View>
               </View>
             </View>
@@ -220,6 +188,7 @@ const Profile = () => {
     </ScreenWrapper>
   );
 };
+
 
 // define your styles
 const styles = StyleSheet.create({

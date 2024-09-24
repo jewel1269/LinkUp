@@ -3,14 +3,41 @@ import Button from "@/components/Button";
 import ScreenWrapper from "@/components/screenWrapper";
 import { AntDesign, EvilIcons, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View, StyleSheet, TouchableOpacity, Image, TextInput, Text } from "react-native";
 import * as ImagePicker from 'expo-image-picker';
+import useAuth from "@/components/useAuth";
 
 // Create a component
 const EditProfile = () => {
     const router = useRouter();
     const [profileImage, setProfileImage] = useState(null);
+    const [userInfo, setUserInfo] = useState<any>({});
+    const [loading, setLoading] = useState(true);
+    const {user}= useAuth()
+
+    useEffect(() => {
+        if (user?.email) {
+          fetchDataUser(user.email);
+        } else {
+          setLoading(false); // Stop loading if user email is not available
+        }
+      }, [user]);
+
+
+      const fetchDataUser = async (email: string) => {
+        try {
+          const response = await fetch(`http://10.0.2.2:5000/user/create/${email}`);
+          const data = await response.json();
+          setUserInfo(data);
+        } catch (error) {
+          console.error("Error fetching user data: ", error);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+
 
     const handleUpdate = () => {
         console.log("Profile updated!");
@@ -57,6 +84,7 @@ const EditProfile = () => {
                         <TextInput
                             style={styles.input}
                             placeholder="Name"
+                            value={userInfo?.name}
                             placeholderTextColor="gray"
                         />
                     </View>
@@ -65,6 +93,7 @@ const EditProfile = () => {
                         <TextInput
                             style={styles.input}
                             placeholder="Phone"
+                            value={userInfo?.phone}
                             placeholderTextColor="gray"
                         />
                     </View>
@@ -73,6 +102,7 @@ const EditProfile = () => {
                         <TextInput
                             style={styles.input}
                             placeholder="Address"
+                            value={userInfo?.username}
                             placeholderTextColor="gray"
                         />
                     </View>
