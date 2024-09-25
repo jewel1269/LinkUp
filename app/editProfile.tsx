@@ -11,10 +11,10 @@ import useAuth from "@/components/useAuth";
 // Create a component
 const EditProfile = () => {
     const router = useRouter();
-    const [profileImage, setProfileImage] = useState(null);
+    const [profileImage, setProfileImage] = useState<string | null>(null); // String for the image URI
     const [userInfo, setUserInfo] = useState<any>({});
     const [loading, setLoading] = useState(true);
-    const {user}= useAuth()
+    const { user } = useAuth();
 
     useEffect(() => {
         if (user?.email) {
@@ -24,8 +24,7 @@ const EditProfile = () => {
         }
       }, [user]);
 
-
-      const fetchDataUser = async (email: string) => {
+    const fetchDataUser = async (email: string) => {
         try {
           const response = await fetch(`http://10.0.2.2:5000/user/create/${email}`);
           const data = await response.json();
@@ -35,9 +34,7 @@ const EditProfile = () => {
         } finally {
           setLoading(false);
         }
-      };
-
-
+    };
 
     const handleUpdate = () => {
         console.log("Profile updated!");
@@ -47,10 +44,22 @@ const EditProfile = () => {
         // Request permission to access the camera roll
         const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
-        // Open the image picker
-        const result = await ImagePicker.launchImageLibraryAsync();
+        if (!permissionResult.granted === false) {
+            alert("Permission to access the camera roll is required.");
+            return;
+        }
 
-     
+        // Open the image picker
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 1,
+        });
+
+        if (!result.canceled) {
+            setProfileImage(result.assets[0].uri); // Set the selected image URI
+        }
     };
 
     return (
@@ -66,12 +75,13 @@ const EditProfile = () => {
                 <View>
                     <TouchableOpacity onPress={pickImage}>
                         <Image 
-                            source={profileImage ? {  profileImage } : require('../assets/images/4113045-removebg-preview.png')}
+                            source={profileImage ? { uri: profileImage } : require('../assets/images/4113045-removebg-preview.png')}
                             style={styles.image}
                         />
                         <Ionicons style={styles.cameraIcon} name="camera-outline" size={24} color="black" />
                     </TouchableOpacity>
                 </View>
+
                 <Text style={styles.infoText}>
                     <EvilIcons name="star" size={24} color="black" /> 
                     Please fill your profile details
@@ -86,6 +96,7 @@ const EditProfile = () => {
                             placeholder="Name"
                             value={userInfo?.name}
                             placeholderTextColor="gray"
+                            onChangeText={(text) => setUserInfo({ ...userInfo, name: text })}
                         />
                     </View>
                     <View style={styles.inputWrapper}>
@@ -95,6 +106,7 @@ const EditProfile = () => {
                             placeholder="Phone"
                             value={userInfo?.phone}
                             placeholderTextColor="gray"
+                            onChangeText={(text) => setUserInfo({ ...userInfo, phone: text })}
                         />
                     </View>
                     <View style={styles.inputWrapper}>
@@ -102,8 +114,9 @@ const EditProfile = () => {
                         <TextInput
                             style={styles.input}
                             placeholder="Address"
-                            value={userInfo?.username}
+                            value={userInfo?.address}
                             placeholderTextColor="gray"
+                            onChangeText={(text) => setUserInfo({ ...userInfo, address: text })}
                         />
                     </View>
                     <View style={styles.inputWrapper}>
@@ -112,6 +125,8 @@ const EditProfile = () => {
                             style={styles.inputBio}
                             placeholder="Bio"
                             placeholderTextColor="gray"
+                            value={userInfo?.bio}
+                            onChangeText={(text) => setUserInfo({ ...userInfo, bio: text })}
                         />
                     </View>
                 </View>
@@ -152,10 +167,10 @@ const styles = StyleSheet.create({
         marginVertical: 20,
     },
     cameraIcon: {
-      alignSelf:"center",
+        alignSelf: "center",
         color: "red",
-        marginTop:-40,
-        marginLeft:50
+        marginTop: -40,
+        marginLeft: 50,
     },
     infoText: {
         marginLeft: 16,
@@ -203,5 +218,5 @@ const styles = StyleSheet.create({
     },
 });
 
-// Make this component available to the app
+// Export the component
 export default EditProfile;

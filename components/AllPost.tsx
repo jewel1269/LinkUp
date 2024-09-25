@@ -1,5 +1,5 @@
 import { AntDesign, Entypo, Feather, FontAwesome } from "@expo/vector-icons";
-import { usePathname, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -11,12 +11,15 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { Video } from "expo-av"; // Use 'expo-av' for video playback
+import useAuth from "./useAuth";
 
 const AllPost = () => {
-  const [posts, setPosts] = useState<any>([]);
+  const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [likedPosts, setLikedPosts] = useState<{ [key: number]: boolean }>({}); // State for tracking liked posts
+  const [likedPosts, setLikedPosts] = useState<{ [key: number]: boolean }>({}); 
   const router = useRouter();
+  const {user}= useAuth()
+  const [userInfo, setUserInfo] = useState<any>({});
 
   const fetchData = () => {
     fetch("http://10.0.2.2:5000/public/posts")
@@ -34,6 +37,8 @@ const AllPost = () => {
   useEffect(() => {
     fetchData();
   }, []);
+
+ 
 
   // Show loading spinner while data is being fetched
   if (loading) {
@@ -81,7 +86,7 @@ const AllPost = () => {
                   />
                 )}
                 <View>
-                  <Text>{post?.username}</Text>
+                  <Text>{post?.username || post?.user?.name}</Text>
                   <Text>{post?.date}</Text>
                 </View>
               </View>
@@ -112,16 +117,15 @@ const AllPost = () => {
                 style={{ flexDirection: "row", alignItems: "center", gap: 45 }}
               >
                 {/* Like Icon with Toggle Functionality */}
-                <TouchableOpacity style={[styles.likeButton]}>
+                <TouchableOpacity
+                  style={styles.likeButton}
+                 
+                >
                   <Feather
+                   onPress={() => toggleLike(post._id)}
                     name="heart"
                     size={24}
-                    onPress={() => toggleLike(post._id)}
-                    color={likedPosts[post.id] ? "red" : "green"} // Change heart color based on liked state
-                    style={[
-                      styles.likeButton,
-                      likedPosts[post?._id] && { color: "green" }, // Change background color to green if liked
-                    ]}
+                    color={likedPosts[post._id] ? "red" : "green"} // Change heart color based on liked state
                   />
                   <Text>{post?.like}</Text>
                 </TouchableOpacity>
@@ -160,14 +164,16 @@ const styles = StyleSheet.create({
   image: {
     width: 40,
     height: 40,
+    borderRadius: 20,
     resizeMode: "contain",
   },
   userDetails: {
     flexDirection: "row",
     alignItems: "center",
+    gap: 5,
   },
   postImageOne: {
-    height: 170,
+    height: 300,
     width: "100%",
     alignSelf: "center",
     borderRadius: 20,

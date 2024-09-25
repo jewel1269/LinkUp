@@ -2,7 +2,7 @@
 import ScreenWrapper from '@/components/screenWrapper';
 import { AntDesign } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import useAuth from '@/components/useAuth';
 import TextEditor from '@/components/TextEditor';
@@ -11,6 +11,28 @@ import TextEditor from '@/components/TextEditor';
 const NewPost = () => {
     const router = useRouter();
     const {user}= useAuth()
+    const [userInfo, setUserInfo] = useState<any>({});
+
+    useEffect(() => {
+        if (user?.email) {
+          fetchDataUser(user.email);
+        } else {
+          // Stop loading if user email is not available
+        }
+      }, [user]);
+    
+      const fetchDataUser = async (email: string) => {
+        try {
+          const response = await fetch(`http://10.0.2.2:5000/user/create/${email}`);
+          const data = await response.json();
+          setUserInfo(data);
+        } catch (error) {
+          console.error("Error fetching user data: ", error);
+        } finally {
+          
+        }
+      };
+    
 
     return (
         <ScreenWrapper >
@@ -29,7 +51,7 @@ const NewPost = () => {
                         style={styles.Image}
                     />
                     
-                    <Text style={styles.userName}>Jewel Mia</Text>
+                    <Text style={styles.userName}>{userInfo?.name}</Text>
                 </View>
 
                 <View style={styles.textEditor}>
