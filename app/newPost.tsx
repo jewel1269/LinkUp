@@ -23,7 +23,7 @@ const NewPost = () => {
     
       const fetchDataUser = async (email: string) => {
         try {
-          const response = await fetch(`http://10.0.2.2:5000/user/create/${email}`);
+          const response = await fetch(`https://linkup-server.vercel.app/user/create/${email}`);
           const data = await response.json();
           setUserInfo(data);
         } catch (error) {

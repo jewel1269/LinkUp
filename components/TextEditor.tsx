@@ -54,7 +54,7 @@ const TextEditor = () => {
 
   const fetchDataUser = async (email: string) => {
     try {
-      const response = await fetch(`http://10.0.2.2:5000/user/create/${email}`);
+      const response = await fetch(`https://linkup-server.vercel.app/user/create/${email}`);
       const data = await response.json();
       setUserInfo(data);
     } catch (error) {
@@ -82,7 +82,7 @@ const TextEditor = () => {
     };
 
     try {
-      const response = await fetch('http://10.0.2.2:5000/public/items', {
+      const response = await fetch('https://linkup-server.vercel.app/public/items', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

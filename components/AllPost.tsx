@@ -22,7 +22,7 @@ const AllPost = () => {
   const [userInfo, setUserInfo] = useState<any>({});
 
   const fetchData = () => {
-    fetch("http://10.0.2.2:5000/public/posts")
+    fetch("https://linkup-server.vercel.app/public/posts")
       .then((response) => response.json())
       .then((data) => {
         setPosts(data);

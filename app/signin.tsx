@@ -89,7 +89,7 @@ const SignUp = () => {
     if (!validateInputs()) return;
   
     try {
-      const response = await axios.post("http://10.0.2.2:5000/user/create", userData); 
+      const response = await axios.post("https://linkup-server.vercel.app/user/create", userData); 
       console.log(response.data); 
     } catch (error) {
       console.error("Error creating user on server:", error);
